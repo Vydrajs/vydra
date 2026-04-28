@@ -1,8 +1,8 @@
 import { parse } from 'regexparam';
 import { VydraActivatedRoute } from './activated-route';
 import type { VydraInternalRoute } from '../interfaces/internal-route.tinterface';
-import type { VydraNavigation } from '../interfaces/nagivation.interface';
-import type { VydraRoute } from '../interfaces/route.interface';
+import type { VydraNavigation } from '@vydra-js/shared';
+import type { VydraRoute } from '@vydra-js/shared';
 import type { VydraRouterOptions } from '../interfaces/router-options.interface';
 /**
  * VydraRouter

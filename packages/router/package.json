@@ -30,6 +30,6 @@
     "vite-plugin-dts": "^4.2.4",
     "lit": "^3.0.0",
     "@vydra-js/bus": "workspace:*",
-    "@vydra-js/core": "workspace:*"
+    "@vydra-js/shared": "workspace:*"
   }
 }

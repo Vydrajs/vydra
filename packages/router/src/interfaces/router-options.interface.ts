@@ -1,5 +1,4 @@
-import type { VydraRoute } from './route.interface';
-import type { VydraNavigation } from './nagivation.interface';
+import type { VydraNavigation, VydraRoute } from '@vydra-js/shared';
 
 export interface VydraRouterOptions {
   /** Base path for this router (e.g. "/admin"). */

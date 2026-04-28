@@ -32,6 +32,7 @@
     "@open-wc/scoped-elements": "^3.0.6",
     "@vydra-js/bus": "workspace:*",
     "@vydra-js/router": "workspace:*",
+    "@vydra-js/shared": "workspace:*",
     "lit": "^3.0.0"
   }
 }

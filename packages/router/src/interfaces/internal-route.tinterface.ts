@@ -1,4 +1,4 @@
-import type { VydraRouteLayout } from './route.interface';
+import type { VydraRouteLayout } from '@vydra-js/shared';
 
 export interface VydraInternalRoute {
   fullPath: string;

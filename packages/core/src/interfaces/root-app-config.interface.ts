@@ -1,5 +1,5 @@
 import type { VydraMFDefinition } from './di.interface';
-import { VydraNavigation, VydraRoute } from '@vydra-js/router';
+import { VydraNavigation, VydraRoute } from '@vydra-js/shared';
 export interface VydraRootConfig {
   /** Global config propagated (read-only) to all MFs. */
   config?: Record<string, unknown>;
