@@ -1,0 +1,32 @@
+{
+  "name": "vydra-js",
+  "version": "0.0.1-alpha.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "build:all": "npm run build --workspaces",
+    "dev": "npm run dev --workspaces",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format:all": "prettier . --write",
+    "format:staged": "lint-staged"
+  },
+  "dependencies": {
+    "reflect-metadata": "^0.2.2"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,json,md}": "prettier --write"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.31.0",
+    "@typescript-eslint/eslint-plugin": "^8.59.1",
+    "@typescript-eslint/parser": "^8.59.1",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-lit": "^2.2.1",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3",
+    "typescript-eslint": "^8.59.1"
+  }
+}
