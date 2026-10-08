@@ -1,17 +1,13 @@
-import type { IPageParams } from '../interfaces/page-params.interface';
-import { VydraComponent } from './component';
+import {
+  BasePageMixin,
+  VydraPageConstructor,
+} from '../mixin/base-page.mixin';
 
-export class VydraPage extends VydraComponent implements IPageParams {
-  /**
-   * Route params
-   *
-   * localhost/route/:id
-   */
-  declare params: Record<string, any>;
-  /**
-   * Route query params
-   *
-   * localhost/route?param=value
-   */
-  declare queryParams: Record<string, any>;
+import { ScopedVydraElement } from '../utils/scoped-element';
+
+const VydraPageBase: VydraPageConstructor =
+  BasePageMixin(ScopedVydraElement);
+
+export class VydraPage extends VydraPageBase {
+  static is: string;
 }

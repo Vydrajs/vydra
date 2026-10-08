@@ -1,53 +1,240 @@
-type LocaleData = Record<string, string>;
+export type LocaleData = Record<string, string>;
+
+export interface I18nLoadOptions {
+  lang?: string;
+  namespace: string;
+  url?: string;
+}
 
 export class I18nService {
   private currentLang = 'es';
-  private locales: Record<string, LocaleData> = {};
   private fallbackLang = 'en';
-  private emitter = new EventTarget();
+
+  private readonly locales =
+    new Map<string, LocaleData>();
+
+  private readonly loading =
+    new Map<string, Promise<LocaleData>>();
+
+  /**
+   * Namespaces que la aplicación ha solicitado.
+   *
+   * Ej:
+   * common
+   * home
+   * checkout
+   */
+  private readonly loadedNamespaces =
+    new Set<string>();
+
+  private readonly emitter =
+    new EventTarget();
+
   private basePath = '';
 
   setBasePath(base: string) {
-    this.basePath = base;
+    this.basePath = base.replace(/\/$/, '');
   }
 
-  async load(lang: string, url?: string) {
-    try {
-      const localeUrl = url ?? `/locales/${lang}.json`;
-      const data = await fetch(`${this.basePath}${localeUrl}`).then((res) => res.json());
-      this.locales[lang] = data;
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.warn(`No se pudo cargar el idioma ${lang}`, err);
-    }
-  }
-
-  setLanguage(lang: string) {
-    this.currentLang = lang;
-    this.emitter.dispatchEvent(new Event('change'));
-  }
-
-  t(key: string, vars?: Record<string, string | number>): string {
-    const translation =
-      this.locales[this.currentLang]?.[key] ?? this.locales[this.fallbackLang]?.[key] ?? key;
-
-    if (vars) {
-      return translation.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? `{${k}}`));
-    }
-
-    return translation;
-  }
-
-  getCurrentLang() {
+  getCurrentLang(): string {
     return this.currentLang;
   }
 
-  onChange(callback: () => void) {
-    this.emitter.addEventListener('change', callback);
+  async ensureLoaded(
+    namespaces: string[],
+    lang = this.currentLang,
+  ): Promise<void> {
+    const uniqueNamespaces = [
+      ...new Set(namespaces),
+    ];
+
+    /**
+     * Registramos que estos namespaces forman
+     * parte de los recursos utilizados por la app.
+     */
+    uniqueNamespaces.forEach((namespace) => {
+      this.loadedNamespaces.add(namespace);
+    });
+
+    await Promise.all(
+      uniqueNamespaces.map((namespace) =>
+        this.load(namespace, lang),
+      ),
+    );
   }
 
-  offChange(callback: () => void) {
-    this.emitter.removeEventListener('change', callback);
+  private async load(
+    namespace: string,
+    lang: string,
+  ): Promise<void> {
+    const cacheKey =
+      `${lang}:${namespace}`;
+
+    /**
+     * Ya está cargado.
+     */
+    if (this.locales.has(cacheKey)) {
+      return;
+    }
+
+    /**
+     * Ya se está cargando.
+     */
+    const pending =
+      this.loading.get(cacheKey);
+
+    if (pending) {
+      await pending;
+      return;
+    }
+
+    const url =
+      `${this.basePath}/locales/${lang}/${namespace}.json`;
+
+    const request = fetch(url)
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(
+            `Unable to load locale: ${url}`,
+          );
+        }
+
+        return response.json() as Promise<LocaleData>;
+      })
+      .then((data) => {
+        this.locales.set(
+          cacheKey,
+          data,
+        );
+      })
+      .finally(() => {
+        this.loading.delete(cacheKey);
+      });
+
+    this.loading.set(
+      cacheKey,
+      request as any,
+    );
+
+    await request;
+  }
+
+  async setLanguage(
+    lang: string,
+  ): Promise<void> {
+    if (
+      lang === this.currentLang
+    ) {
+      return;
+    }
+
+    /**
+     * Todos los namespaces utilizados hasta
+     * este momento.
+     */
+    const namespaces = [
+      ...this.loadedNamespaces,
+    ];
+
+    /**
+     * Primero cargamos el idioma nuevo.
+     *
+     * IMPORTANTE:
+     * todavía no cambiamos currentLang.
+     */
+    await Promise.all(
+      namespaces.map((namespace) =>
+        this.load(namespace, lang),
+      ),
+    );
+
+    /**
+     * Ahora sí cambiamos el idioma.
+     */
+    this.currentLang = lang;
+
+    this.emitter.dispatchEvent(
+      new Event('change'),
+    );
+  }
+
+  t(
+    key: string,
+    vars?: Record<
+      string,
+      string | number
+    >,
+  ): string {
+    const [namespace, translationKey] =
+      this.resolveKey(key);
+
+    const translation =
+      this.getTranslation(
+        this.currentLang,
+        namespace,
+        translationKey,
+      ) ??
+      this.getTranslation(
+        this.fallbackLang,
+        namespace,
+        translationKey,
+      ) ??
+      key;
+
+    if (!vars) {
+      return translation;
+    }
+
+    return translation.replace(
+      /\{(\w+)\}/g,
+      (_, key) =>
+        String(
+          vars[key] ?? `{${key}}`,
+        ),
+    );
+  }
+
+  private getTranslation(
+    lang: string,
+    namespace: string,
+    key: string,
+  ): string | undefined {
+    return this.locales.get(
+      `${lang}:${namespace}`,
+    )?.[key];
+  }
+
+  private resolveKey(
+    key: string,
+  ): [string, string] {
+    const index = key.indexOf('.');
+
+    if (index === -1) {
+      return ['common', key];
+    }
+
+    return [
+      key.slice(0, index),
+      key.slice(index + 1),
+    ];
+  }
+
+  onChange(
+    callback: EventListener,
+  ): void {
+    this.emitter.addEventListener(
+      'change',
+      callback,
+    );
+  }
+
+  offChange(
+    callback: EventListener,
+  ): void {
+    this.emitter.removeEventListener(
+      'change',
+      callback,
+    );
   }
 }
 

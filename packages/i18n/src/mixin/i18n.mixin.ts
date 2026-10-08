@@ -35,13 +35,16 @@ export const I18nMixin = <T extends Constructor<LitElement>>(superClass: T) => {
       this._unsubscribe?.();
     }
 
-    t(key: string) {
-      return this._i18n?.t(key) ?? key;
+    t(key: string, vars?: Record<
+      string,
+      string | number
+    >,) {
+      return this._i18n?.t(key, vars) ?? key;
     }
   }
 
   type MixinInterface = {
-    t(key: string): string;
+    t(key: string, vars?: Record<string, string | number>): string;
     getLabel(key: string): string;
     i18nMap: Record<string, string>;
   };

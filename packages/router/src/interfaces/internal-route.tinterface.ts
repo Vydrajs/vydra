@@ -1,4 +1,5 @@
-import type { VydraRouteLayout } from '@vydra-js/shared';
+import type { VydraBeforeEnter, VydraGuardResult, VydraRouteContext, VydraRouteLayout } from '@vydra-js/shared';
+
 
 export interface VydraInternalRoute {
   fullPath: string;
@@ -11,4 +12,5 @@ export interface VydraInternalRoute {
   redirectTo?: string;
   data?: Record<string, unknown>;
   title?: string;
+  beforeEnter?: VydraBeforeEnter;
 }

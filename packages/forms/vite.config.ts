@@ -4,7 +4,7 @@ import pkg from './package.json' with { type: 'json' };
 
 export default defineConfig({
   resolve: {
-    dedupe: ['lit', 'lit-html', 'reactive-element', 'lit/directive.js'],
+    dedupe: ['lit', 'lit-html', 'reactive-element', '@lit/context', '@open-wc/scoped-elements'],
     preserveSymlinks: false,
   },
   build: {
@@ -15,7 +15,7 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: [/^lit/, /^@lit/, /^@vydra-js/, 'regexparam'],
+      external: [/^lit/, /^@lit/, 'lit', /^@lit\/.*/,/^lit\/.*/, /^@vydra-js/, 'regexparam'],
     },
     minify: false,
     sourcemap: true,

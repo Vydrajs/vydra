@@ -1,3 +1,5 @@
+import { VydraBeforeEnter } from "./router.interface";
+
 export interface VydraRouteLayout {
   tag: string;
   loader: () => Promise<typeof HTMLElement>;
@@ -25,4 +27,6 @@ export interface VydraRoute {
   data?: Record<string, unknown>;
   /** Browser tab title for this route. */
   title?: string;
+  /** Hook called before entering the route. */
+  beforeEnter?: VydraBeforeEnter;
 }

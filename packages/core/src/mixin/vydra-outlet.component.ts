@@ -3,13 +3,13 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { unsafeStatic, html as staticHtml } from 'lit/static-html.js';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements/lit-element.js';
+import { VydraRouteContext } from '@vydra-js/shared';
 
 export class VydraOutletBase extends ScopedElementsMixin(LitElement) {
   static scopedElements: Record<string, typeof HTMLElement> = {};
   static useScopedRegistry = true;
   @property() pageTag?: string;
-  @property({ type: Object }) routeParams: Record<string, string> = {};
-  @property({ type: Object }) queryParams: Record<string, string> = {};
+  @property() routeContext?: VydraRouteContext;
   @property() layout?: string;
 
   /**
@@ -18,13 +18,11 @@ export class VydraOutletBase extends ScopedElementsMixin(LitElement) {
    */
   protected async loadPage(
     tag: string,
-    params: Record<string, string>,
-    queryParams: Record<string, string>,
+    routeContext: VydraRouteContext,
     layout?: string,
   ): Promise<void> {
     this.pageTag = tag;
-    this.routeParams = params;
-    this.queryParams = queryParams;
+    this.routeContext = routeContext;
     this.layout = layout;
     await this.updateComplete;
     this.requestUpdate();
@@ -47,23 +45,26 @@ export class VydraOutletBase extends ScopedElementsMixin(LitElement) {
     }
   }
 
-  protected renderPage(): TemplateResult {
-    const page = this.unsafeRenderTag(this.pageTag!, this.routeParams, this.queryParams);
+  render(): TemplateResult {
+    const page = this.unsafeRenderTag(this.pageTag!, this.routeContext);
     if (!this.layout) return page;
-    return this.unsafeRenderTag(this.layout, {}, {}, page);
+    return this.unsafeRenderTag(this.layout, this.routeContext, page);
   }
 
   private unsafeRenderTag(
     tagName: string,
-    params?: Record<string, string>,
-    queryParams?: Record<string, string>,
+    routeContext?: VydraRouteContext,
     content?: TemplateResult,
   ): TemplateResult {
-    const tag = unsafeStatic(tagName);
-    return staticHtml`
-      <${tag}
-        .params=${ifDefined(params)}
-        .queryParams=${ifDefined(queryParams)}
-      >${content ?? ''}</${tag}>`;
+    if(!tagName) return staticHtml``;
+     const tag = unsafeStatic(tagName);
+
+  return staticHtml`
+    <${tag}
+      .routeContext=${ifDefined(routeContext)}
+    >
+      ${content ?? ''}
+    </${tag}>
+  `;
   }
 }
